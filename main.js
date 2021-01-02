@@ -1,20 +1,22 @@
 
-// Update trending giphys
+var static_data = {
+    //base_url: 'http://localhost:50930/api',
+    base_url: 'https://nan.ep724.ir/api',
+    UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F'
+};
+// Update main page
 function update() {
 
-    // Toggle refresh state
-    $('#update .icon').toggleClass('d-none');
-
-    // Call Giphy API
+    // Call general food method
     $.post({
-        url: 'http://localhost:50930/api/Rstrnts/GetGeneralFood',
-        headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F', BranchID: '1' },
+        url: static_data.base_url + '/Rstrnts/GetGeneralFood',
+        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
         contentType: 'application/json; charset=utf-8'
     })
-
+   
         // Success
         .done(function (res) {
-
+           
             SetVahedPool(res.VahedPool);
 
             // Empty Element
@@ -37,10 +39,10 @@ function update() {
             var rstImgCounter = 1;
             for (var rstImg in rstrntImg) {
                 if (rstImgCounter == 1) {
-                    rstImgData += '<div class="item active"><img style="width:100%;" src="http://nsp.nanstar.ir/Files/' + rstrntImg[rstImg].Img + '"></div>';
+                    rstImgData += '<div class="item active"><img style="width:100%;" src="https://nan.ep724.ir/Files/' + rstrntImg[rstImg].Img + '"></div>';
                 }
                 else {
-                    rstImgData += '<div class="item"><img style="width:100%;" src="http://nsp.nanstar.ir/Files/' + rstrntImg[rstImg].Img + '"></div>';
+                    rstImgData += '<div class="item"><img style="width:100%;" src="https://nan.ep724.ir/Files/' + rstrntImg[rstImg].Img + '"></div>';
                 }
                 rstImgCounter++;
             }
@@ -50,7 +52,7 @@ function update() {
             var bannerSlideData = '';
             for (var banner in bannerSlider) {
                 bannerSlideData += '<a style="color:black" onclick="SetBannerID(' + bannerSlider[banner].BannerSliderID + ')">' +
-                    '<img style="margin:5px;border-radius:10px" src="http://nsp.nanstar.ir/Files/BannerSlider/' + bannerSlider[banner].ImageName + '"></a>';
+                    '<img style="margin:5px;border-radius:10px" src="https://nan.ep724.ir/Files/BannerSlider/' + bannerSlider[banner].ImageName + '"></a>';
             }
             $('#BannerImgSlider').prepend(bannerSlideData);
 
@@ -58,7 +60,7 @@ function update() {
             var menuData = '';
             for (var mn in menu) {
                 menuData += '<a style="color:black" onclick="SetMnID(' + menu[mn].MnID + ')"><div class="col-xs-6 col-sm-3" style="float:left;margin:0;padding:0;border:1px solid #ddd">' +
-                    '<img class="col-xs-12 img-fluid" style="height:110px !important" src="http://nsp.nanstar.ir/Files/Menu/' + menu[mn].ImageName + '">' +
+                    '<img class="col-xs-12 img-fluid" style="height:110px !important" src="https://nan.ep724.ir/Files/Menu/' + menu[mn].ImageName + '">' +
                     '<p class="text-center">' + menu[mn].Name + '</p>' +
                     '</div></a>'
             }
@@ -68,7 +70,7 @@ function update() {
             var latestTcdyData = '';
             for (var latest in latestTCDY) {
                 latestTcdyData += '<div class="inner-scroll">' +
-                    '<img src="http://nsp.nanstar.ir/Files/' + latestTCDY[latest].Pic + '" style="width:100%;height:120px" />' +
+                    '<img src="https://nan.ep724.ir/Files/' + latestTCDY[latest].Pic + '" style="width:100%;height:120px" />' +
                     '<p style="overflow:hidden">' + latestTCDY[latest].Cne + '</p>' +
                     '<p style="overflow:hidden">' + numberWithCommas(latestTCDY[latest].Cfe) + res.VahedPool + '</p>';
                 if (latestTCDY[latest].CExst == true) {
@@ -85,7 +87,7 @@ function update() {
             var bestSellTcdyData = '';
             for (var best in bestSellTCDY) {
                 bestSellTcdyData += '<div class="inner-scroll">' +
-                    '<img src="http://nsp.nanstar.ir/Files/' + bestSellTCDY[best].Pic + '" style="width:100%;height:120px" />' +
+                    '<img src="https://nan.ep724.ir/Files/' + bestSellTCDY[best].Pic + '" style="width:100%;height:120px" />' +
                     '<p style="overflow:hidden">' + bestSellTCDY[best].Cne + '</p>' +
                     '<p style="overflow:hidden">' + numberWithCommas(bestSellTCDY[best].Cfe) + res.VahedPool + '</p>';
                 if (bestSellTCDY[best].CExst == true) {
@@ -113,25 +115,17 @@ function update() {
         })
 
         // Failure
-        .fail(function () {
-
+        .fail(function (xhr, status, error) {
+            console.log(xhr);
+            console.log(status);
+            console.log(error);
             $('.alert').slideDown();
             setTimeout(function () { $('.alert').slideUp() }, 2000);
         })
 
-        // Complete
-        .always(function () {
-
-            // Re-Toggle refresh state
-            $('#update .icon').toggleClass('d-none');
-        });
-
     // Prevent submission if originates from click
     return false;
 }
-
-// Manual refresh
-$('#update a').click(update);
 
 // Update trending giphys on load
 update();
@@ -144,29 +138,23 @@ function numberWithCommas(x) {
         return x;
     }
 }
-
 function SetMnID(menuID) {
     putLocalStorage('mnID', menuID);
     window.location.href = "tcdyList.html";
 }
-
 function SetBannerID(bannerID) {
     putLocalStorage('bannerID', bannerID);
     window.location.href = "bannerSliderTcdy.html";
 }
-
 function SetActiveRstrntID(rstrntID) {
     putLocalStorage('BranchID', rstrntID);
 }
-
 function SetVahedPool(pool) {
     putLocalStorage('vahedPool', pool);
 }
-
 function SetUserID(userID) {
     putLocalStorage('USERID', userID);
 }
-
 function putLocalStorage(key, value) {
     if (window.localStorage) {
         window.localStorage[key] = value;
@@ -181,8 +169,8 @@ function GetAllTcdiesByMnID() {
 
     // Call Giphy API
     $.post({
-        url: 'http://localhost:50930/api/TCDies/GetAllTcdiesByMnID',
-        headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F' },
+        url: static_data.base_url + '/TCDies/GetAllTcdiesByMnID',
+        headers: { UniqCode: static_data.UniqCode },
         data: JSON.stringify({ "Int1": 1, "Int2": parseInt(getLocalStorage('mnID')) }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -201,7 +189,7 @@ function GetAllTcdiesByMnID() {
                 var tcdyListData = '';
                 for (var latest in tcdyList) {
                     tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
-                        '<img src="http://nsp.nanstar.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
+                        '<img src="https://nan.ep724.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
                         '<p style="overflow:hidden">' + tcdyList[latest].Cne + '</p>' +
                         '<p style="overflow:hidden">' + numberWithCommas(tcdyList[latest].Cfe) + getLocalStorage('vahedPool') + '</p>';
                     if (tcdyList[latest].CExst == true) {
@@ -235,8 +223,8 @@ function GetTCDiesByBannerSliderId() {
 
     // Call Giphy API
     $.post({
-        url: 'http://localhost:50930/api/TCDies/GetTCDiesByBannerSliderId',
-        headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F', BranchID: '1' },
+        url: static_data.base_url + '/TCDies/GetTCDiesByBannerSliderId',
+        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
         data: JSON.stringify({ "Int1": 1, "Int2": parseInt(getLocalStorage('bannerID')) }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -255,7 +243,7 @@ function GetTCDiesByBannerSliderId() {
                 var tcdyListData = '';
                 for (var latest in tcdyList) {
                     tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
-                        '<img src="http://nsp.nanstar.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
+                        '<img src="https://nan.ep724.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
                         '<p style="overflow:hidden">' + tcdyList[latest].Cne + '</p>' +
                         '<p style="overflow:hidden">' + numberWithCommas(tcdyList[latest].Cfe) + getLocalStorage('vahedPool') + '</p>';
                     if (tcdyList[latest].CExst == true) {
@@ -293,8 +281,8 @@ $('#SearchInput').keyup(function () {
     else {
         // Call Giphy API
         $.post({
-            url: 'http://localhost:50930/api/TCDies/SearchKala',
-            headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F' },
+            url: static_data.base_url + '/TCDies/SearchKala',
+            headers: { UniqCode: static_data.UniqCode },
             data: JSON.stringify({ "Int1": 1, "String1": $.trim($('#SearchInput').val()) }),
             contentType: 'application/json; charset=utf-8'
         })
@@ -314,7 +302,7 @@ $('#SearchInput').keyup(function () {
                     var searchListData = '';
                     for (var search in searchList) {
                         searchListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
-                            '<img src="http://nsp.nanstar.ir/Files/' + searchList[search].Pic + '" style="width:100%;height:120px" />' +
+                            '<img src="https://nan.ep724.ir/Files/' + searchList[search].Pic + '" style="width:100%;height:120px" />' +
                             '<p style="overflow:hidden">' + searchList[search].Cne + '</p>' +
                             '<p style="overflow:hidden">' + numberWithCommas(searchList[search].Cfe) + getLocalStorage('vahedPool') + '</p>' +
                             '</div>';
@@ -339,13 +327,12 @@ $('#SearchInput').keyup(function () {
 
 });
 
-
 // latest tcdy
 function GetLatestTCDies() {
 
     $.post({
-        url: 'http://localhost:50930/api/TCDies/GetLatestTCDies',
-        headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F', BranchID: '1' },
+        url: static_data.base_url + '/TCDies/GetLatestTCDies',
+        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
         data: JSON.stringify({ "Int1": 1 }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -364,7 +351,7 @@ function GetLatestTCDies() {
                 var tcdyListData = '';
                 for (var latest in tcdyList) {
                     tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
-                        '<img src="http://nsp.nanstar.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
+                        '<img src="https://nan.ep724.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
                         '<p style="overflow:hidden">' + tcdyList[latest].Cne + '</p>' +
                         '<p style="overflow:hidden">' + numberWithCommas(tcdyList[latest].Cfe) + getLocalStorage('vahedPool') + '</p>';
                     if (tcdyList[latest].CExst == true) {
@@ -397,8 +384,8 @@ function GetBestSellTCDies() {
 
     // Call Giphy API
     $.post({
-        url: 'http://localhost:50930/api/TCDies/GetBestSellTCDies',
-        headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F', BranchID: '1' },
+        url: static_data.base_url + '/TCDies/GetBestSellTCDies',
+        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
         data: JSON.stringify({ "Int1": 1 }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -417,7 +404,7 @@ function GetBestSellTCDies() {
                 var tcdyListData = '';
                 for (var latest in tcdyList) {
                     tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
-                        '<img src="http://nsp.nanstar.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
+                        '<img src="https://nan.ep724.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
                         '<p style="overflow:hidden">' + tcdyList[latest].Cne + '</p>' +
                         '<p style="overflow:hidden">' + numberWithCommas(tcdyList[latest].Cfe) + getLocalStorage('vahedPool') + '</p>';
                     if (tcdyList[latest].CExst == true) {
@@ -462,7 +449,9 @@ function ShoppingCartIconClicked() {
 
 function SelectBranchBtnClicked() {
     $.get({
-        url: 'http://localhost:50930/api/Rstrnts/GetAllRstrnts', headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F' }, contentType: 'application/json; charset=utf-8'
+        url: static_data.base_url + '/Rstrnts/GetAllRstrnts',
+        headers: { UniqCode: static_data.UniqCode },
+        contentType: 'application/ json; charset=utf - 8'
     })
 
         // Success
@@ -574,14 +563,14 @@ function AddToCart(TCDYID) {
 $("#ContactFormBtn").click(function () {
     var name = $.trim($("#ContactForm-Name").val());
     var textMsg = $.trim($("#ContactForm-ContactText").val());
-    if (name == '' || textMsg == '') { 
+    if (name == '' || textMsg == '') {
         $('#empty-alert').slideDown();
         $('#empty-alert').html('نام و پیام وارد کنید');
     }
     else {
         $.post({
-            url: 'http://localhost:50930/api/CntctFrms/PostCntctFrm',
-            headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F', BranchID: '1' },
+            url: static_data.base_url + '/CntctFrms/PostCntctFrm',
+            headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
             data: JSON.stringify({ "Name": name, "Message": textMsg }),
             contentType: 'application/json; charset=utf-8'
         })
@@ -607,8 +596,8 @@ function SubmitLoginForm() {
     $('#VerifyCodeModal').modal('toggle');
 
     $.post({
-        url: 'http://localhost:50930/api/Common/SendCode',
-        headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F', BranchID: '1' },
+        url: static_data.base_url + '/Common/SendCode',
+        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
         data: JSON.stringify({ "String1": mobile }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -633,8 +622,8 @@ function SendVerifyCode() {
     $('#VerifyCodeModal').modal('toggle');
 
     $.post({
-        url: 'http://localhost:50930/api/Common/VerifyCode',
-        headers: { UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F', BranchID: '1' },
+        url: static_data.base_url + '/Common/VerifyCode',
+        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
         data: JSON.stringify({ "String1": mobile, "String2": verifyCode }),
         contentType: 'application/json; charset=utf-8'
     })
