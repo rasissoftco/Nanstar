@@ -3,7 +3,7 @@
   "name": "نان استار",
   "lang": "fa",
   "description": "نرم افزار فروشگاه اینترنتی نان استار",
-  "start_url": "https://rasissoftco.github.io/Nanstar/",
+  "start_url": "index.html",
   "background_color": "#fff",
   "theme_color": "#ff8701",
   "dir": "rtl",

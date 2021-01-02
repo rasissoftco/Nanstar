@@ -1,3 +1,8 @@
+//progressive enhancement
+if (navigator.serviceWorker) {
+    //register sw
+    navigator.serviceWorker.register('sw.js').catch(console.error)
+}
 
 var static_data = {
     //base_url: 'http://localhost:50930/api',
