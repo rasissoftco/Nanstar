@@ -1,0 +1,216 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <title>نان استار</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=0, user-scalable=0">
+        <link rel="manifest" href="manifest.json">
+        <meta name="apple-mobile-web-app-title" content="Nanstar">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="apple-touch-startup-image" href="images/launch.png">
+        <link rel="apple-touch-icon-precomposed" sizes="57x57" href="images/icons/apple-touch-icon-57x57.png">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/icons/apple-touch-icon-114x114.png">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/icons/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/icons/apple-touch-icon-144x144.png">
+        <link rel="apple-touch-icon-precomposed" sizes="60x60" href="images/icons/apple-touch-icon-60x60.png">
+        <link rel="apple-touch-icon-precomposed" sizes="120x120" href="images/icons/apple-touch-icon-120x120.png">
+        <link rel="apple-touch-icon-precomposed" sizes="76x76" href="images/icons/apple-touch-icon-76x76.png">
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="images/icons/apple-touch-icon-152x152.png">
+        <link rel="icon" type="image/png" href="images/icons/favicon-96x96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="images/icons/favicon-32x32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="images/icons/favicon-16x16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="images/icons/android-icon-192x192.png" sizes="192x192">
+        <link rel="icon" type="image/png" href="images/icons/apple-icon-180x180.png" sizes="180x180">
+        <meta name="msapplication-TileColor" content="#ff8701">
+        <!-- <link rel="stylesheet" href="vendor/bootstrap.min.css"> -->
+        <!-- <script defer src="vendor/jquery.min.js"></script> -->
+        <!-- bootstrap 3 -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+        <!-- Carousel -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+        <!-- font awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+		<link rel="stylesheet" href="style.css">
+         
+    </head>
+
+    <body style="direction:rtl;margin:0;padding:0">
+  
+		<div id="overlay-container">
+			<div id="overlay">
+				<div class="col-xs-3 col-sm-3"></div>
+				<div class="col-xs-6 col-sm-6" style="padding:50% 0">
+					<div class="loader"></div>
+				</div>
+				<div class="col-xs-3 col-sm-3"></div>			
+			</div>
+		</div>
+		
+		<div id="navbar-container">
+			<header class="navbar sticky-top navbar-expand navbar-dark text-center" style="background-color:#FF8701;padding: 10px 0;color:#fff">
+				<div class="col-xs-12">
+					<div class="col-xs-2" dir="ltr">
+						<button type="button" class="btn btn-sm" style="background-color:transparent;border:none" id="ShoppingCartIcon" onclick="ShoppingCartIconClicked()">
+							<i class="fa fa-shopping-cart fa-2x"></i>
+							<span id='lblCartCount'> 0 </span>
+						</button>
+					</div>
+					<div class="col-xs-2">
+						<button type="button" class="btn btn-sm" onclick="window.location.href='/search.html';" style="background-color:transparent;border:none">
+							<i class="fa fa-search fa-2x"></i>
+						</button>
+					</div>
+					<div class="col-xs-6" style="overflow:hidden">
+						<button type="button" class="btn" data-toggle="modal" data-target="#branchModal" style="background-color:transparent;border:none" onclick="SelectBranchBtnClicked()">
+							<strong>شعبه خیابان همتی فر</strong>
+						</button>
+					</div>
+					<div class="col-xs-2">
+						<button type="button" class="btn btn-sm" data-toggle="modal" data-target="#mainMenuModal" style="background-color:transparent;border:none">
+							<i class="fa fa-bars fa-2x"></i>
+						</button>
+					</div>
+				</div>
+			</header>
+		</div>
+				
+		<!-- branch modal -->
+		<div id="branchModal-container">
+			<div class="modal fade" id="branchModal" role="dialog">
+				<div class="modal-dialog" style="margin-top:50px">
+				
+				  <div class="modal-content">
+					<div class="modal-header">
+					  <h4 class="modal-title text-center">انتخاب شعبه</h4>
+					</div>
+					<div class="modal-body" style="overflow:auto">				
+						<div id="RstrntList"></div>
+					</div>
+				  </div>
+				  
+				</div>
+			</div>
+		</div>
+		 
+		<!-- main menu modal -->
+		<div id="mainMenuModal-container">
+			<div class="modal fade right" id="mainMenuModal" role="dialog">
+			<div class="modal-dialog" style="width:80%;margin:0">
+		
+				  <div class="modal-content" style="border-radius:0px;height:100vh">
+					<div class="modal-body text-center" style="overflow:auto;padding:0">
+					<div class="col-xs-12 col-sm-12" style="background-color:#FF8701">
+						<img src="http://nanstar.ir/wp-content/uploads/2020/07/22.png" class="col-xs-12 col-sm-12"/>
+					</div>
+					<div class="col-xs-12 col-sm-12">
+							 <ul class="list-group col-xs-12 col-sm-12" style="text-align:right">
+							  <li class="list-group-item" style="border:none">
+								<a href="/index.html" style="color:black;text-decoration: none;">
+									<i class="fa fa-home" style="margin:5px;color:#FF8701"></i>
+									<span>صفحه اصلی</span>
+								</a>
+							  </li>
+							  <li class="list-group-item" style="border:none">
+								<a data-toggle="modal" data-target="#LoginModal" style="color:black;text-decoration: none;" data-dismiss="modal">
+									<i class="fa fa-sign-in" style="margin:5px;color:#FF8701"></i>
+									<span>ورود</span>
+								</a>
+							  </li>
+							  <li class="list-group-item" style="border:none">
+								<a data-toggle="modal" data-target="#branchModal" style="color:black;text-decoration: none;" data-dismiss="modal" >
+									<i class="fa fa-check" style="margin:5px;color:#FF8701"></i>
+									<span>انتخاب شعبه</span>
+								</a>
+							  </li>
+							  <li class="list-group-item" style="border:none"> 
+								<a href="contact.html" style="color:black;text-decoration: none;">
+									<i class="fa fa-address-book" style="margin:5px;color:#FF8701"></i>
+									<span>تماس با ما</span>
+								</a>
+							  </li>
+								<li class="list-group-item" style="border:none">
+								<a href="about.html" style="color:black;text-decoration: none;">
+									<i class="fa fa-info" style="margin:5px;color:#FF8701"></i>
+									<span>درباره ما</span>
+								</a>
+							  </li>
+							</ul>
+					</div>
+				 
+					</div>
+				  </div>
+				  
+				</div>
+			</div>
+		</div>
+		
+		<!-- login modal -->
+		<div id="LoginModal-container">
+			<div class="modal fade" id="LoginModal" role="dialog">
+				<div class="modal-dialog" style="margin-top:50px">
+					
+					<div class="modal-content text-center">
+						<div class="modal-header"> 
+						  <h4 class="modal-title">عضویت و ورود</h4>
+						</div>
+						<div class="modal-body text-center" style="overflow:auto">
+							<form>
+								<div class="col-xs-12 col-sm-12" style="padding:10px">
+									<label class="control-label" >شماره موبایل</label>
+									<input class="form-control" type="text" required="" oninvalid="this.setCustomValidity('شماره موبایل را وارد کنید')" id="login-mobile" />
+								</div> 
+								<div class="col-xs-12 col-sm-12" style="padding:10px">
+									<button type="button" class="btn btn-block btn-warning btn-flat" id="LoginFormBtn" onclick="SubmitLoginForm()" >ارسال</button>
+								</div>
+							</form>
+						</div>
+						
+					</div>
+					  
+				</div>
+			</div>
+		</div>	  
+			  
+        <!-- verify code modal -->
+        <div id="LoginModal-container">
+            <div class="modal fade" id="VerifyCodeModal" role="dialog">
+                <div class="modal-dialog" style="margin-top:50px">
+
+                    <div class="modal-content text-center">
+                        <div class="modal-header">
+                            <h4 class="modal-title">تایید</h4>
+                        </div>
+                        <div class="modal-body text-center" style="overflow:auto">
+                            <form>
+                                <div class="col-xs-12 col-sm-12" style="padding:10px">
+                                    <label class="control-label">کد فعالسازی</label>
+                                    <input class="form-control" type="text" required="" oninvalid="this.setCustomValidity('کد فعالسازی را وارد کنید')" id="login-verifyCode" />
+                                </div>
+                                <div class="col-xs-12 col-sm-12" style="padding:10px">
+                                    <button type="button" class="btn btn-block btn-warning btn-flat" onclick="SendVerifyCode()">ارسال</button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+			  
+        <!-- Main Conatainer -->
+        <main class="container-fluid">
+ 
+        </main> 
+    </body>
+
+</html>
