@@ -1,14 +1,14 @@
 {
-	"short_name": "نان استار",
-	"name": "نان استار",
-	"lang": "fa",
-	"description": "نرم افزار فروشگاه اینترنتی نان استار",
-	"start_url": ".",
-	"background_color": "#fff",
-	"theme_color": "#ff8701",
-	"dir": "rtl",
-	"display": "standalone",
-	"orientation": "portrait",
+  "short_name": "نان استار",
+  "name": "نان استار",
+  "lang": "fa",
+  "description": "نرم افزار فروشگاه اینترنتی نان استار",
+  "start_url": "https://rasissoftco.github.io/Nanstar/",
+  "background_color": "#fff",
+  "theme_color": "#ff8701",
+  "dir": "rtl",
+  "display": "standalone",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "images/icons/android-icon-192x192.png",
@@ -76,5 +76,5 @@
       "sizes": "16x16"
     }
   ],
-	"prefer_related_applications": false
+  "prefer_related_applications": false
 }
