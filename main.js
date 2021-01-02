@@ -11,9 +11,12 @@ function update() {
     $.post({
         url: static_data.base_url + '/Rstrnts/GetGeneralFood',
         headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
-        contentType: 'application/json; charset=utf-8'
+        contentType: 'application/json; charset=utf-8',
+        beforeSend: function (request) {
+            request.withCredentials = false; 
+        },
     })
-   
+      
         // Success
         .done(function (res) {
            
@@ -52,7 +55,7 @@ function update() {
             var bannerSlideData = '';
             for (var banner in bannerSlider) {
                 bannerSlideData += '<a style="color:black" onclick="SetBannerID(' + bannerSlider[banner].BannerSliderID + ')">' +
-                    '<img style="margin:5px;border-radius:10px" src="https://nan.ep724.ir/Files/BannerSlider/' + bannerSlider[banner].ImageName + '"></a>';
+                    '<img style="margin:5px;border-radius:10px;width:220px;height:120px" src="https://nan.ep724.ir/Files/BannerSlider/' + bannerSlider[banner].ImageName + '"></a>';
             }
             $('#BannerImgSlider').prepend(bannerSlideData);
 
