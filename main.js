@@ -3,28 +3,28 @@ if (navigator.serviceWorker) {
     //register sw
     navigator.serviceWorker.register('sw.js').catch(console.error)
 }
-
 var static_data = {
     //base_url: 'http://localhost:50930/api',
     base_url: 'https://nan.ep724.ir/api',
     UniqCode: 'ACC11DF4-E600-4F4D-8716-34BE6768A39F'
 };
+
 // Update main page
-function update() {
+function GetGeneralFood() {
 
     // Call general food method
     $.post({
         url: static_data.base_url + '/Rstrnts/GetGeneralFood',
-        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
+        headers: { UniqCode: static_data.UniqCode, BranchID: parseInt(getLocalStorage('BranchID')) },
         contentType: 'application/json; charset=utf-8',
         beforeSend: function (request) {
-            request.withCredentials = false; 
+            request.withCredentials = false;
         },
     })
-      
+
         // Success
         .done(function (res) {
-           
+
             SetVahedPool(res.VahedPool);
 
             // Empty Element
@@ -82,7 +82,12 @@ function update() {
                     '<p style="overflow:hidden">' + latestTCDY[latest].Cne + '</p>' +
                     '<p style="overflow:hidden">' + numberWithCommas(latestTCDY[latest].Cfe) + res.VahedPool + '</p>';
                 if (latestTCDY[latest].CExst == true) {
-                    latestTcdyData += '<button onclick="AddToCart(' + latestTCDY[latest].TCDYID + ')"  class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
+                  if (IsInCart(latestTCDY[latest].TCDYID) == false){
+                    latestTcdyData += '<button onclick="AddToCart(' + latestTCDY[latest].TCDYID +',\'' + latestTCDY[latest].Cne + '\', this)"  class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
+                  }
+                  else {
+                    latestTcdyData += '<button onclick="RemoveFromCart(' + latestTCDY[latest].TCDYID +',\'' + latestTCDY[latest].Cne + '\', this)"  class="btn btn-success btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i>حذف از سبد خرید</button>';
+                  }
                 }
                 else if (latestTCDY[latest].CExst == false) {
                     latestTcdyData += '<button class="btn btn-warning btn-flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
@@ -99,7 +104,7 @@ function update() {
                     '<p style="overflow:hidden">' + bestSellTCDY[best].Cne + '</p>' +
                     '<p style="overflow:hidden">' + numberWithCommas(bestSellTCDY[best].Cfe) + res.VahedPool + '</p>';
                 if (bestSellTCDY[best].CExst == true) {
-                    bestSellTcdyData += '<button onclick="AddToCart(' + bestSellTCDY[best].TCDYID + ')" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
+                    bestSellTcdyData += '<button onclick="AddToCart(' + bestSellTCDY[best].TCDYID +',\'' + bestSellTCDY[best].Cne + '\',this)" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
                 }
                 else if (bestSellTCDY[best].CExst == false) {
                     bestSellTcdyData += '<button class="btn btn-warning btn-flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
@@ -108,18 +113,8 @@ function update() {
             }
             $('#BestSellTCDY').prepend(bestSellTcdyData);
 
+            UpdateShoppingCartIcon();
             HideOverlay();
-            // Loop Giphys
-            //$.each( res, function (i, giphy) {
-
-            // Add Giphy HTML
-            // $('#giphys').prepend(
-            // '<div class="col-sm-6 col-md-4 col-lg-3">' +
-            //'<img class="w-100 img-fluid" src="' + giphy.images.downsized_large.url + '">' 				
-            // '</div>'
-            // );
-
-            //});
         })
 
         // Failure
@@ -134,9 +129,6 @@ function update() {
     // Prevent submission if originates from click
     return false;
 }
-
-// Update trending giphys on load
-update();
 
 function numberWithCommas(x) {
     if (x != null) {
@@ -163,6 +155,10 @@ function SetVahedPool(pool) {
 function SetUserID(userID) {
     putLocalStorage('USERID', userID);
 }
+function SetCurrentRowID(rowID) {
+    putLocalStorage('RowID', rowID);
+    window.location.href = "ReceiptDetail.html";
+}
 function putLocalStorage(key, value) {
     if (window.localStorage) {
         window.localStorage[key] = value;
@@ -175,7 +171,6 @@ function getLocalStorage(key) {
 // tcdy in menu item
 function GetAllTcdiesByMnID() {
 
-    // Call Giphy API
     $.post({
         url: static_data.base_url + '/TCDies/GetAllTcdiesByMnID',
         headers: { UniqCode: static_data.UniqCode },
@@ -196,12 +191,12 @@ function GetAllTcdiesByMnID() {
                 var tcdyList = res.tCDYWithCounts;
                 var tcdyListData = '';
                 for (var latest in tcdyList) {
-                    tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
+                    tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px;float:right">' +
                         '<img src="https://nan.ep724.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
                         '<p style="overflow:hidden">' + tcdyList[latest].Cne + '</p>' +
                         '<p style="overflow:hidden">' + numberWithCommas(tcdyList[latest].Cfe) + getLocalStorage('vahedPool') + '</p>';
                     if (tcdyList[latest].CExst == true) {
-                        tcdyListData += '<button onclick="AddToCart(' + tcdyList[latest].TCDYID + ')" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
+                        tcdyListData += '<button onclick="AddToCart(' + tcdyList[latest].TCDYID +',\'' + tcdyList[latest].Cne + '\',this)" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
                     }
                     else if (tcdyList[latest].CExst == false) {
                         tcdyListData += '<button class="btn btn-warning btn-flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
@@ -211,7 +206,8 @@ function GetAllTcdiesByMnID() {
                 $('#tcdyList').prepend(tcdyListData);
             }
 
-            HideOverlay()
+            UpdateShoppingCartIcon();
+            HideOverlay();
         })
 
         // Failure
@@ -232,7 +228,7 @@ function GetTCDiesByBannerSliderId() {
     // Call Giphy API
     $.post({
         url: static_data.base_url + '/TCDies/GetTCDiesByBannerSliderId',
-        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
+        headers: { UniqCode: static_data.UniqCode, BranchID: parseInt(getLocalStorage('BranchID')) },
         data: JSON.stringify({ "Int1": 1, "Int2": parseInt(getLocalStorage('bannerID')) }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -250,12 +246,12 @@ function GetTCDiesByBannerSliderId() {
                 var tcdyList = res.tCDYWithCounts;
                 var tcdyListData = '';
                 for (var latest in tcdyList) {
-                    tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
+                    tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px;float:right">' +
                         '<img src="https://nan.ep724.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
                         '<p style="overflow:hidden">' + tcdyList[latest].Cne + '</p>' +
                         '<p style="overflow:hidden">' + numberWithCommas(tcdyList[latest].Cfe) + getLocalStorage('vahedPool') + '</p>';
                     if (tcdyList[latest].CExst == true) {
-                        tcdyListData += '<button onclick="AddToCart(' + tcdyList[latest].TCDYID + ')" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
+                        tcdyListData += '<button onclick="AddToCart(' + tcdyList[latest].TCDYID +',\'' + tcdyList[latest].Cne + '\',this)" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
                     }
                     else if (tcdyList[latest].CExst == false) {
                         tcdyListData += '<button class="btn btn-warning flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
@@ -265,7 +261,8 @@ function GetTCDiesByBannerSliderId() {
                 $('#bannerSliderTcdy').prepend(tcdyListData);
             }
 
-            HideOverlay()
+            UpdateShoppingCartIcon();
+            HideOverlay();
         })
 
         // Failure
@@ -309,7 +306,7 @@ $('#SearchInput').keyup(function () {
                     var searchList = res.tCDYWithCounts;
                     var searchListData = '';
                     for (var search in searchList) {
-                        searchListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
+                        searchListData += '<div class="col-xs-6 text-center" style="padding:3px;float:right">' +
                             '<img src="https://nan.ep724.ir/Files/' + searchList[search].Pic + '" style="width:100%;height:120px" />' +
                             '<p style="overflow:hidden">' + searchList[search].Cne + '</p>' +
                             '<p style="overflow:hidden">' + numberWithCommas(searchList[search].Cfe) + getLocalStorage('vahedPool') + '</p>' +
@@ -318,7 +315,8 @@ $('#SearchInput').keyup(function () {
                     $('#searchList').prepend(searchListData);
                 }
 
-                HideOverlay()
+                UpdateShoppingCartIcon();
+                HideOverlay();
             })
 
             // Failure
@@ -340,7 +338,7 @@ function GetLatestTCDies() {
 
     $.post({
         url: static_data.base_url + '/TCDies/GetLatestTCDies',
-        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
+        headers: { UniqCode: static_data.UniqCode, BranchID: parseInt(getLocalStorage('BranchID')) },
         data: JSON.stringify({ "Int1": 1 }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -358,12 +356,12 @@ function GetLatestTCDies() {
                 var tcdyList = res.tCDYWithCounts;
                 var tcdyListData = '';
                 for (var latest in tcdyList) {
-                    tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
+                    tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px;float:right">' +
                         '<img src="https://nan.ep724.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
                         '<p style="overflow:hidden">' + tcdyList[latest].Cne + '</p>' +
                         '<p style="overflow:hidden">' + numberWithCommas(tcdyList[latest].Cfe) + getLocalStorage('vahedPool') + '</p>';
                     if (tcdyList[latest].CExst == true) {
-                        tcdyListData += '<button onclick="AddToCart(' + tcdyList[latest].TCDYID + ')" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
+                        tcdyListData += '<button onclick="AddToCart(' + tcdyList[latest].TCDYID +',\'' + tcdyList[latest].Cne + '\',this)" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
                     }
                     else if (tcdyList[latest].CExst == false) {
                         tcdyListData += '<button class="btn btn-warning flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
@@ -373,7 +371,8 @@ function GetLatestTCDies() {
                 $('#LatestTCDY-full').prepend(tcdyListData);
             }
 
-            HideOverlay()
+            UpdateShoppingCartIcon();
+            HideOverlay();
         })
 
         // Failure
@@ -393,7 +392,7 @@ function GetBestSellTCDies() {
     // Call Giphy API
     $.post({
         url: static_data.base_url + '/TCDies/GetBestSellTCDies',
-        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
+        headers: { UniqCode: static_data.UniqCode, BranchID: parseInt(getLocalStorage('BranchID')) },
         data: JSON.stringify({ "Int1": 1 }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -411,12 +410,12 @@ function GetBestSellTCDies() {
                 var tcdyList = res.tCDYWithCounts;
                 var tcdyListData = '';
                 for (var latest in tcdyList) {
-                    tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px">' +
+                    tcdyListData += '<div class="col-xs-6 text-center" style="padding:3px;float:right">' +
                         '<img src="https://nan.ep724.ir/Files/' + tcdyList[latest].Pic + '" style="width:100%;height:120px" />' +
                         '<p style="overflow:hidden">' + tcdyList[latest].Cne + '</p>' +
                         '<p style="overflow:hidden">' + numberWithCommas(tcdyList[latest].Cfe) + getLocalStorage('vahedPool') + '</p>';
                     if (tcdyList[latest].CExst == true) {
-                        tcdyListData += '<button onclick="AddToCart(' + tcdyList[latest].TCDYID + ')" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
+                        tcdyListData += '<button onclick="AddToCart(' + tcdyList[latest].TCDYID +',\'' + tcdyList[latest].Cne + '\',this)" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
                     }
                     else if (tcdyList[latest].CExst == false) {
                         tcdyListData += '<button class="btn btn-warning flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
@@ -425,8 +424,8 @@ function GetBestSellTCDies() {
                 }
                 $('#BestSellTCDY-full').prepend(tcdyListData);
             }
-
-            HideOverlay()
+            UpdateShoppingCartIcon();
+            HideOverlay();
         })
 
         // Failure
@@ -440,8 +439,8 @@ function GetBestSellTCDies() {
     return false;
 }
 
-// $("#ShoppingCartIcon").click(function(){ 
-// console.log('open modal'); 
+// $("#ShoppingCartIcon").click(function(){
+// console.log('open modal');
 // if (localStorage.getItem('USERID') === null) {
 // console.log('open modal');
 // $('#LoginModal').modal('show');
@@ -452,6 +451,9 @@ function GetBestSellTCDies() {
 function ShoppingCartIconClicked() {
     if (localStorage.getItem('USERID') === null) {
         $('#LoginModal').modal('show');
+    }
+    else {
+      window.location.href="Cart.html";
     }
 }
 
@@ -558,13 +560,194 @@ function SelectBranchBtnClicked() {
 
 }
 
-function AddToCart(TCDYID) {
+function MainMenuBtnClicked(){
+  if (localStorage.getItem('USERID') === null || localStorage.getItem('USERID') == 0) {
+    $('#login-li').show();
+    $('#profile-li').hide();
+    $('#myReceipt-li').hide();
+    $('#logout-li').hide();
+  }
+  else {
+    $('#login-li').hide();
+    $('#profile-li').show();
+    $('#myReceipt-li').show();
+    $('#logout-li').show();
+  }
+}
+
+function AddToCart(TCDYID, name, btn) {
     if (localStorage.getItem('USERID') === null) {
         $('#LoginModal').modal('show');
     }
     else {
-        console.log("this will add to cart: " + TCDYID);
+        $(btn).removeClass("btn-warning");
+        $(btn).addClass("btn-success");
+        $(btn).html('<i class="fa fa-shopping-cart" ></i>حذف از سبد خرید');
+        $('#select-item-count-Modal').modal('show');
+        $(btn).attr('onClick', 'RemoveFromCart(' + TCDYID +',\'' + name + '\',this)' );
+        UpdateCart(TCDYID, 1);
+        $('#select-item-count-name').html(name);
+        $('#select-item-count-count').html('1');
+        $('#select-item-count-minus').click(function(){ AddingItemCounts(TCDYID, -1)});
+        $('#select-item-count-orderCount').empty();
+        var orderCountData = '';
+        //for (var oc in orderCount) {
+            //orderCountData += '<div class="col-xs-2 col-sm-2" style="background-color:#FF8701;border-radius:50px;padding:15px;margin:5px">5</div>'
+        //}
+        orderCountData += '<div class="col-xs-2 col-sm-2" style="background-color:#FF8701;border-radius:50px;padding:17px;margin:5px" onclick="AddingItemCounts(' + TCDYID + ',5)">5</div>';
+        orderCountData += '<div class="col-xs-2 col-sm-2" style="background-color:#FF8701;border-radius:50px;padding:17px;margin:5px" onclick="AddingItemCounts(' + TCDYID + ',4)">4</div>';
+        orderCountData += '<div class="col-xs-2 col-sm-2" style="background-color:#FF8701;border-radius:50px;padding:17px;margin:5px" onclick="AddingItemCounts(' + TCDYID + ',3)">3</div>';
+        orderCountData += '<div class="col-xs-2 col-sm-2" style="background-color:#FF8701;border-radius:50px;padding:17px;margin:5px" onclick="AddingItemCounts(' + TCDYID + ',2)">2</div>';
+        orderCountData += '<div class="col-xs-2 col-sm-2" style="background-color:#FF8701;border-radius:50px;padding:17px;margin:5px" onclick="AddingItemCounts(' + TCDYID + ',1)">1</div>';
+        $('#select-item-count-orderCount').prepend(orderCountData);
     }
+    UpdateShoppingCartIcon();
+}
+function UpdateCart(TCDYID, count){
+  //درصورت موجود نبودن ابتدا سبد را بساز
+  if(localStorage.getItem('cart') === null){
+    putLocalStorage('cart',JSON.stringify([]));
+  }
+  var cart = [];
+  cart = JSON.parse(localStorage.getItem('cart') || "[]");
+  var cartItem = { id : TCDYID , count : 1 };
+  cart.push(cartItem);
+  putLocalStorage('cart',JSON.stringify(cart));
+  UpdateShoppingCartIcon();
+}
+
+function RemoveFromCart(TCDYID, name, btn){
+  var cart = [];
+  cart = JSON.parse(localStorage.getItem('cart') || "[]");
+  var newCart = [];
+  for(var item in cart){
+    if (cart[item].id != TCDYID)
+    {
+      var cartItem = { id : cart[item].id , count : cart[item].count };
+      newCart.push(cartItem);
+    }
+  }
+  putLocalStorage('cart',JSON.stringify(newCart));
+
+  $(btn).removeClass("btn-success");
+  $(btn).addClass("btn-warning");
+  $(btn).html('<i class="fa fa-shopping-cart" ></i>افزودن به سبد خرید');
+  $(btn).attr('onClick', 'AddToCart(' + TCDYID + ',\'' + name + '\',this)' );
+
+  UpdateShoppingCartIcon();
+}
+
+function AddingItemCounts(TCDYID, count){
+  var newCount = null;
+  var cart = [];
+  cart = JSON.parse(localStorage.getItem('cart') || "[]");
+  for(var item in cart){
+    if (cart[item].id == TCDYID){
+      if(count == -1 && cart[item].count == 1){
+        newCount = cart[item].count;
+        break;
+      }
+      else {
+        cart[item].count += count;
+        newCount = cart[item].count;
+        break;
+      }
+    }
+  }
+  putLocalStorage('cart',JSON.stringify(cart));
+  //$('#select-item-count-count').html(newCount);
+}
+function GetCart(){
+  var cart = [];
+  cart = JSON.parse(localStorage.getItem('cart') || "[]");
+  $("#my-cart-items").empty();
+  if (cart != '[]'){
+    var CartItemData = '';
+    for(var item in cart){
+      CartItemData += '<div class="col-xs-12 col-sm-12" style="border:1px solid #eee;margin-bottom:3px;padding:10px">'+
+          '<div class="col-xs-12 col-sm-12">'+
+            '<span style="float:right">ریشه زعفران یک مثقالی</span>'+
+            '<span style="float:left;color:#FF8701"><i class="fa fa-trash-o"></i></span>'+
+          '</div>'+
+          '<div class="col-xs-12 col-sm-12 text-right">'+
+            '<span onclick="AddingItemCounts(' + cart[item].id + ', 1)"><i class="fa fa-plus-circle text-success"></i></span>'+
+            '<span style="margin:10px">' + cart[item].count + '</span>'+
+            '<span onclick="AddingItemCounts(' + cart[item].id + ', -1)"><i class="fa fa-minus-circle text-danger"></i></span>'+
+          '</div>'+
+        '</div>';
+    }
+    $("#my-cart-items").html(CartItemData);
+  }
+  else {
+    $("#my-cart-items").html('<span>سبد خرید شما خالی است</span>');
+  }
+}
+function UpdateShoppingCartIcon(){
+  var cart = [];
+  cart = JSON.parse(localStorage.getItem('cart') || "[]");
+  var cartCount = 0;
+  if(cart != '[]'){
+    for(var item in cart){
+      cartCount += 1;
+    }
+  }
+  $('#lblCartCount').html(cartCount);
+}
+function IsInCart(TCDYID){
+  var result = false;
+  var cart = [];
+  cart = JSON.parse(localStorage.getItem('cart') || "[]");
+  if (cart == '[]'){
+    result = false;
+  }
+  else {
+    for (var item in cart){
+      if (cart[item].id == TCDYID){
+        result = true;
+        break;
+      }
+    }
+  }
+  return result;
+}
+
+function GetProfile(){
+  $.post({
+      url: static_data.base_url + '/Common/WholeProfileData',
+      headers: { UniqCode: static_data.UniqCode , USERID: localStorage.getItem('USERID') },
+      //data: JSON.stringify({ "id": localStorage.getItem('USERID') }),
+      contentType: 'application/json; charset=utf-8'
+  })
+
+      // Success
+      .done(function (res) {
+          var tcdyList = res.tCDYWithCounts;
+          var tcdyListData = '';
+          $('#Adrs1').val(res.tPYR.Adrs);
+          $('#Adrs2').val(res.tPYR.Adrs2);
+          $('#Adrs3').val(res.tPYR.Adrs3);
+          $('#Adrs4').val(res.tPYR.Adrs4);
+          $('#CrdNumber').val(res.tPYR.CrdNmbr);
+          $('#vahedPool').html(localStorage.getItem('vahedPool'));
+          $('#Mmdeh').html(res.String1);
+          $('#Nmdeh').html(res.Decimal1);
+
+          UpdateShoppingCartIcon();
+          HideOverlay();
+      })
+
+      // Failure
+      .fail(function () {
+
+          $('.alert').slideDown();
+          setTimeout(function () { $('.alert').slideUp() }, 2000);
+      })
+
+  // Prevent submission if originates from click
+  return false;
+}
+function SaveProfile(){
+
 }
 
 //submit contact form
@@ -578,7 +761,7 @@ $("#ContactFormBtn").click(function () {
     else {
         $.post({
             url: static_data.base_url + '/CntctFrms/PostCntctFrm',
-            headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
+            headers: { UniqCode: static_data.UniqCode, BranchID: parseInt(getLocalStorage('BranchID')) },
             data: JSON.stringify({ "Name": name, "Message": textMsg }),
             contentType: 'application/json; charset=utf-8'
         })
@@ -605,7 +788,7 @@ function SubmitLoginForm() {
 
     $.post({
         url: static_data.base_url + '/Common/SendCode',
-        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
+        headers: { UniqCode: static_data.UniqCode, BranchID: parseInt(getLocalStorage('BranchID')) },
         data: JSON.stringify({ "String1": mobile }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -623,6 +806,12 @@ function SubmitLoginForm() {
         })
 }
 
+//submit logout form
+function SubmitLogouForm(){
+  $('#LogoutModal').modal('toggle');
+  putLocalStorage('USERID', 0);
+}
+
 function SendVerifyCode() {
     var mobile = $.trim($("#login-mobile").val());
     var verifyCode = $.trim($("#login-verifyCode").val());
@@ -631,7 +820,7 @@ function SendVerifyCode() {
 
     $.post({
         url: static_data.base_url + '/Common/VerifyCode',
-        headers: { UniqCode: static_data.UniqCode, BranchID: '1' },
+        headers: { UniqCode: static_data.UniqCode, BranchID: parseInt(getLocalStorage('BranchID')) },
         data: JSON.stringify({ "String1": mobile, "String2": verifyCode }),
         contentType: 'application/json; charset=utf-8'
     })
@@ -645,7 +834,6 @@ function SendVerifyCode() {
                 }
                 else {
                     SetUserID(res.TPYRID);
-                    alert("ورود با موفقیت انجام شد.");
                 }
             }
         })
@@ -656,6 +844,121 @@ function SendVerifyCode() {
             $('.alert').slideDown();
             setTimeout(function () { $('.alert').slideUp() }, 2000);
         })
+}
+
+function GetMyRecceipts(){
+  $.post({
+      url: static_data.base_url + '/ReceiptHeaders/MyReceiptHeaders',
+      headers: { UniqCode: static_data.UniqCode , USERID : localStorage.getItem('USERID') },
+      data: JSON.stringify({ "Int1": localStorage.getItem('USERID') }),
+      contentType: 'application/json; charset=utf-8'
+  })
+
+      // Success
+      .done(function (res) {
+        // Empty Element
+        $('#receipts-list').empty();
+        var receiptHeaders = res.receiptHeaderFullDatas;
+        var receiptHeadersData = '';
+        for (var rh in receiptHeaders) {
+          receiptHeadersData += '<a onclick="SetCurrentRowID(\'' + receiptHeaders[rh].RowID + '\')" style="color:#000;text-decoration:none">'+
+            '<div class="col-xs-12 col-sm-12">'+
+              '<div class="col-xs-12 col-sm-12" style="background-color:#ffeb99;padding:5px">'+
+                '<span class="text-danger">شماره فاکتور: </span><span>' + receiptHeaders[rh].Receipt_no +'</span><span><i class="fa fa-angle-left" style="color:#FF8701;float:left;font-weight:bold"></i></span>'+
+              '</div>'+
+            '<div class="col-xs-12 col-sm-12" style="padding:5px">'+
+              '<div class="col-xs-6 col-sm-6" style="padding:0">'+
+                '<p><span class="text-danger">تاریخ: </span><span>' + receiptHeaders[rh].FactorTarikh + '</span></p>'+
+                '<p><span class="text-danger">نوع پرداخت: </span><span>آنلاین</span></p>'+
+                '<p><span class="text-danger">تخفیف:</span><span> ' + numberWithCommas(receiptHeaders[rh].DiscountAmount) + '</span><span>'+ localStorage.getItem('vahedPool') + '</span></p>'+
+              '</div>'+
+              '<div class="col-xs-6 col-sm-6" style="padding:0">'+
+                '<p><span class="text-danger">وضعیت: </span><span class="label label-danger">لغو شده</span></p>'+
+                '<p><span class="text-danger">مبلغ کل: </span><span> ' + numberWithCommas(receiptHeaders[rh].Total_amounts) + '</span><span>' + localStorage.getItem('vahedPool') + '</span></p>'+
+                '<p><span class="text-danger">مالیات: </span><span>' + numberWithCommas(receiptHeaders[rh].Total_tax) + '</span><span>' + localStorage.getItem('vahedPool') + ' </span></p>'+
+              '</div>'+
+              '<div class="col-xs-12 col-sm-12" style="padding:0">'+
+                '<p><span class="text-danger">اضافات: </span><span>' + numberWithCommas(receiptHeaders[rh].TotalEzf - receiptHeaders[rh].TotalKsr) + '</span><span>' + localStorage.getItem('vahedPool') + '</span></p>'+
+                '<p><span class="text-danger">مبلغ قابل پرداخت: </span><span>'  + numberWithCommas(receiptHeaders[rh].MablaghGhabelPardakht) + '</span><span>'+ localStorage.getItem('vahedPool') + '</span></p>'+
+                '<p><span class="text-danger">توضیحات: </span><span>' + receiptHeaders[rh].Tozihat +'</span></p>'+
+              '</div>'+
+            '</div>'+
+            '</div>'+
+          '</a>';
+        }
+        $('#receipts-list').prepend(receiptHeadersData);
+
+          UpdateShoppingCartIcon();
+          HideOverlay();
+      })
+
+      // Failure
+      .fail(function () {
+
+          $('.alert').slideDown();
+          setTimeout(function () { $('.alert').slideUp() }, 2000);
+      })
+
+  // Prevent submission if originates from click
+  return false;
+}
+
+function ShowReceiptDetail(){
+  $.post({
+      url: static_data.base_url + '/ReceiptDetails/FindReceiptDetailsByHeaderID',
+      headers: { UniqCode: static_data.UniqCode },
+      data: JSON.stringify({ "Int1": localStorage.getItem('RowID') }),
+      contentType: 'application/json; charset=utf-8'
+  })
+
+      // Success
+      .done(function (res) {
+        // Empty Element
+        $('#ReceiptDetail-ezfksr').empty();
+        $('#ReceiptDetail-kala').empty();
+
+        var tEZFKSRs = res.tEZFKSRs;
+        var tEZFKSRsData = '';
+        for(var ek in tEZFKSRs){
+          tEZFKSRsData += '<div class="col-xs-12 col-sm-12" style="border:1px solid #eee;margin-bottom:3px;padding:10px">';
+          if(tEZFKSRs[ek].IsEzft == true){
+            tEZFKSRsData += '<span><i class="fa fa-plus-circle text-success"></i></span>';
+          }
+          else if(tEZFKSRs[ek].IsEzft == false){
+            tEZFKSRsData += '<span><i class="fa fa-minus-circle text-danger"></i></span>';
+          }
+            tEZFKSRsData += '<span class="text-danger"> ' + tEZFKSRs[ek].Caption + ': </span>'+
+            '<span> ' + numberWithCommas(tEZFKSRs[ek].Price) + ' </span>'+
+            '<span> ' + localStorage.getItem('vahedPool') + ' </span>'+
+          '</div>';
+        }
+        $('#ReceiptDetail-ezfksr').prepend(tEZFKSRsData);
+
+        var receiptDetails = res.receiptDetails;
+        var receiptDetailsData = '';
+        for (var rd in receiptDetails) {
+          receiptDetailsData += '<div class="col-xs-12 col-sm-12" style="border:1px solid #eee;margin-bottom:3px;padding:10px">'+
+            '<p>' + receiptDetails[rd].Name + '</p>'+
+            '<p><span class="text-danger">قیمت: </span><span>' + numberWithCommas(receiptDetails[rd].Price) + '</span><span>' + localStorage.getItem('vahedPool') + '</span></p>'+
+            '<p><span class="text-danger">تعداد: </span><span>' + receiptDetails[rd].Weight_quantity + '</span></p>'+
+          '</div>';
+        }
+        $('#ReceiptDetail-kala').prepend(receiptDetailsData);
+
+          UpdateShoppingCartIcon();
+          HideOverlay();
+          //window.location.href = "ReceiptDetail.html";
+      })
+
+      // Failure
+      .fail(function () {
+
+          $('.alert').slideDown();
+          setTimeout(function () { $('.alert').slideUp() }, 2000);
+      })
+
+  // Prevent submission if originates from click
+  return false;
 }
 
 function HideOverlay() {
@@ -684,7 +987,7 @@ function HideOverlay() {
     // }
     // function doneLoading(){
       // ovrl.style.opacity = 0;
-      // setTimeout(function(){ 
+      // setTimeout(function(){
         // ovrl.style.display = "none";
       // }, 2200);
     // }
@@ -693,7 +996,7 @@ function HideOverlay() {
       // tImg.onload  = imgLoaded;
       // tImg.onerror = imgLoaded;
       // tImg.src     = img[i].src;
-    // }    
+    // }
   // }
   // document.addEventListener('DOMContentLoaded', loadbar, false);
 // }());

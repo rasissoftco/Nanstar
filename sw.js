@@ -1,9 +1,9 @@
 //sw version
 const Version = '1.0';
 
-//static cache - app shell 
+//static cache - app shell
 const appAssets = ['about.html', 'bannerSliderTcdy.html', 'BestSellTCDY.html', 'contact.html', 'index.html',
-    'LatestTCDY.html', 'Layout.html', 'LoadLayout.js', 'search.html', 'style.css', 'tcdyList.html', 'main.js',
+    'LatestTCDY.html', 'Layout.html', 'LoadLayout.js', 'search.html', 'style.css', 'tcdyList.html',
     'images/logo.png'];
 
 //sw install
@@ -12,7 +12,7 @@ self.addEventListener('install', e => {
     );
 })
 
-//sw activate 
+//sw activate
 self.addEventListener('activate', e => {
     //clean static cache
     let cleaned = caches.keys().then(keys => {
@@ -28,12 +28,12 @@ self.addEventListener('activate', e => {
 //static cache strategy - cache with network fallback
 const staticCache = (req) => {
     return caches.match(req).then(cachedRes => {
-        //return cached response if found 
+        //return cached response if found
         if (cachedRes) return cachedRes;
 
         //fallback to network
         return fetch(req).then(networkRes => {
-            //update cache with response 
+            //update cache with response
             caches.open(`static-${Version}`).then(cache => cache.put(req, networkRes));
 
             //return clone of network response
