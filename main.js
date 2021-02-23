@@ -15,7 +15,7 @@ function GetGeneralFood() {
     // Call general food method
     $.post({
         url: static_data.base_url + '/Rstrnts/GetGeneralFood',
-        headers: { UniqCode: static_data.UniqCode, BranchID: parseInt(getLocalStorage('BranchID')) },
+        headers: { UniqCode: static_data.UniqCode, BranchID: 1 /*parseInt(getLocalStorage('BranchID'))*/ },
         contentType: 'application/json; charset=utf-8',
         beforeSend: function (request) {
             request.withCredentials = false;
