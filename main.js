@@ -104,7 +104,14 @@ function GetGeneralFood() {
                     '<p style="overflow:hidden">' + bestSellTCDY[best].Cne + '</p>' +
                     '<p style="overflow:hidden">' + numberWithCommas(bestSellTCDY[best].Cfe) + res.VahedPool + '</p>';
                 if (bestSellTCDY[best].CExst == true) {
+                  if (IsInCart(bestSellTCDY[best].TCDYID) == false){
                     bestSellTcdyData += '<button onclick="AddToCart(' + bestSellTCDY[best].TCDYID +',\'' + bestSellTCDY[best].Cne + '\',this)" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
+                  }
+                  else {
+                    {
+                      bestSellTcdyData += '<button onclick="RemoveFromCart(' + bestSellTCDY[best].TCDYID +',\'' + bestSellTCDY[best].Cne + '\',this)" class="btn btn-success btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i>حذف از سبد خرید</button>';
+                    }
+                  }
                 }
                 else if (bestSellTCDY[best].CExst == false) {
                     bestSellTcdyData += '<button class="btn btn-warning btn-flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
@@ -154,10 +161,6 @@ function SetVahedPool(pool) {
 }
 function SetUserID(userID) {
     putLocalStorage('USERID', userID);
-}
-function SetCurrentRowID(rowID) {
-    putLocalStorage('RowID', rowID);
-    window.location.href = "ReceiptDetail.html";
 }
 function putLocalStorage(key, value) {
     if (window.localStorage) {
@@ -439,15 +442,6 @@ function GetBestSellTCDies() {
     return false;
 }
 
-// $("#ShoppingCartIcon").click(function(){
-// console.log('open modal');
-// if (localStorage.getItem('USERID') === null) {
-// console.log('open modal');
-// $('#LoginModal').modal('show');
-// $('#LoginModal-container').show();
-// }
-// })
-
 function ShoppingCartIconClicked() {
     if (localStorage.getItem('USERID') === null) {
         $('#LoginModal').modal('show');
@@ -660,6 +654,7 @@ function AddingItemCounts(TCDYID, count){
 function GetCart(){
   var cart = [];
   cart = JSON.parse(localStorage.getItem('cart') || "[]");
+  console.log(cart);
   $("#my-cart-items").empty();
   if (cart != '[]'){
     var CartItemData = '';
@@ -846,157 +841,7 @@ function SendVerifyCode() {
         })
 }
 
-function GetMyRecceipts(){
-  $.post({
-      url: static_data.base_url + '/ReceiptHeaders/MyReceiptHeaders',
-      headers: { UniqCode: static_data.UniqCode , USERID : localStorage.getItem('USERID') },
-      data: JSON.stringify({ "Int1": localStorage.getItem('USERID') }),
-      contentType: 'application/json; charset=utf-8'
-  })
-
-      // Success
-      .done(function (res) {
-        // Empty Element
-        $('#receipts-list').empty();
-        var receiptHeaders = res.receiptHeaderFullDatas;
-        var receiptHeadersData = '';
-        for (var rh in receiptHeaders) {
-          receiptHeadersData += '<a onclick="SetCurrentRowID(\'' + receiptHeaders[rh].RowID + '\')" style="color:#000;text-decoration:none">'+
-            '<div class="col-xs-12 col-sm-12">'+
-              '<div class="col-xs-12 col-sm-12" style="background-color:#ffeb99;padding:5px">'+
-                '<span class="text-danger">شماره فاکتور: </span><span>' + receiptHeaders[rh].Receipt_no +'</span><span><i class="fa fa-angle-left" style="color:#FF8701;float:left;font-weight:bold"></i></span>'+
-              '</div>'+
-            '<div class="col-xs-12 col-sm-12" style="padding:5px">'+
-              '<div class="col-xs-6 col-sm-6" style="padding:0">'+
-                '<p><span class="text-danger">تاریخ: </span><span>' + receiptHeaders[rh].FactorTarikh + '</span></p>'+
-                '<p><span class="text-danger">نوع پرداخت: </span><span>آنلاین</span></p>'+
-                '<p><span class="text-danger">تخفیف:</span><span> ' + numberWithCommas(receiptHeaders[rh].DiscountAmount) + '</span><span>'+ localStorage.getItem('vahedPool') + '</span></p>'+
-              '</div>'+
-              '<div class="col-xs-6 col-sm-6" style="padding:0">'+
-                '<p><span class="text-danger">وضعیت: </span><span class="label label-danger">لغو شده</span></p>'+
-                '<p><span class="text-danger">مبلغ کل: </span><span> ' + numberWithCommas(receiptHeaders[rh].Total_amounts) + '</span><span>' + localStorage.getItem('vahedPool') + '</span></p>'+
-                '<p><span class="text-danger">مالیات: </span><span>' + numberWithCommas(receiptHeaders[rh].Total_tax) + '</span><span>' + localStorage.getItem('vahedPool') + ' </span></p>'+
-              '</div>'+
-              '<div class="col-xs-12 col-sm-12" style="padding:0">'+
-                '<p><span class="text-danger">اضافات: </span><span>' + numberWithCommas(receiptHeaders[rh].TotalEzf - receiptHeaders[rh].TotalKsr) + '</span><span>' + localStorage.getItem('vahedPool') + '</span></p>'+
-                '<p><span class="text-danger">مبلغ قابل پرداخت: </span><span>'  + numberWithCommas(receiptHeaders[rh].MablaghGhabelPardakht) + '</span><span>'+ localStorage.getItem('vahedPool') + '</span></p>'+
-                '<p><span class="text-danger">توضیحات: </span><span>' + receiptHeaders[rh].Tozihat +'</span></p>'+
-              '</div>'+
-            '</div>'+
-            '</div>'+
-          '</a>';
-        }
-        $('#receipts-list').prepend(receiptHeadersData);
-
-          UpdateShoppingCartIcon();
-          HideOverlay();
-      })
-
-      // Failure
-      .fail(function () {
-
-          $('.alert').slideDown();
-          setTimeout(function () { $('.alert').slideUp() }, 2000);
-      })
-
-  // Prevent submission if originates from click
-  return false;
-}
-
-function ShowReceiptDetail(){
-  $.post({
-      url: static_data.base_url + '/ReceiptDetails/FindReceiptDetailsByHeaderID',
-      headers: { UniqCode: static_data.UniqCode },
-      data: JSON.stringify({ "Int1": localStorage.getItem('RowID') }),
-      contentType: 'application/json; charset=utf-8'
-  })
-
-      // Success
-      .done(function (res) {
-        // Empty Element
-        $('#ReceiptDetail-ezfksr').empty();
-        $('#ReceiptDetail-kala').empty();
-
-        var tEZFKSRs = res.tEZFKSRs;
-        var tEZFKSRsData = '';
-        for(var ek in tEZFKSRs){
-          tEZFKSRsData += '<div class="col-xs-12 col-sm-12" style="border:1px solid #eee;margin-bottom:3px;padding:10px">';
-          if(tEZFKSRs[ek].IsEzft == true){
-            tEZFKSRsData += '<span><i class="fa fa-plus-circle text-success"></i></span>';
-          }
-          else if(tEZFKSRs[ek].IsEzft == false){
-            tEZFKSRsData += '<span><i class="fa fa-minus-circle text-danger"></i></span>';
-          }
-            tEZFKSRsData += '<span class="text-danger"> ' + tEZFKSRs[ek].Caption + ': </span>'+
-            '<span> ' + numberWithCommas(tEZFKSRs[ek].Price) + ' </span>'+
-            '<span> ' + localStorage.getItem('vahedPool') + ' </span>'+
-          '</div>';
-        }
-        $('#ReceiptDetail-ezfksr').prepend(tEZFKSRsData);
-
-        var receiptDetails = res.receiptDetails;
-        var receiptDetailsData = '';
-        for (var rd in receiptDetails) {
-          receiptDetailsData += '<div class="col-xs-12 col-sm-12" style="border:1px solid #eee;margin-bottom:3px;padding:10px">'+
-            '<p>' + receiptDetails[rd].Name + '</p>'+
-            '<p><span class="text-danger">قیمت: </span><span>' + numberWithCommas(receiptDetails[rd].Price) + '</span><span>' + localStorage.getItem('vahedPool') + '</span></p>'+
-            '<p><span class="text-danger">تعداد: </span><span>' + receiptDetails[rd].Weight_quantity + '</span></p>'+
-          '</div>';
-        }
-        $('#ReceiptDetail-kala').prepend(receiptDetailsData);
-
-          UpdateShoppingCartIcon();
-          HideOverlay();
-          //window.location.href = "ReceiptDetail.html";
-      })
-
-      // Failure
-      .fail(function () {
-
-          $('.alert').slideDown();
-          setTimeout(function () { $('.alert').slideUp() }, 2000);
-      })
-
-  // Prevent submission if originates from click
-  return false;
-}
-
 function HideOverlay() {
     $('#overlay-container').fadeOut();
 }
 
-//loading theme
-
-// (function(){
-  // function id(v){ return document.getElementById(v); }
-  // function loadbar() {
-    // var ovrl = id("overlay"),
-        // prog = id("progress"),
-        // stat = id("progstat"),
-        // img = document.images,
-        // c = 0,
-        // tot = img.length;
-    // if(tot == 0) return doneLoading();
-
-    // function imgLoaded(){
-      // c += 1;
-      // var perc = ((100/tot*c) << 0) +"%";
-      // prog.style.width = perc;
-      // stat.innerHTML = "Loading "+ perc;
-      // if(c===tot) return doneLoading();
-    // }
-    // function doneLoading(){
-      // ovrl.style.opacity = 0;
-      // setTimeout(function(){
-        // ovrl.style.display = "none";
-      // }, 2200);
-    // }
-    // for(var i=0; i<tot; i++) {
-      // var tImg     = new Image();
-      // tImg.onload  = imgLoaded;
-      // tImg.onerror = imgLoaded;
-      // tImg.src     = img[i].src;
-    // }
-  // }
-  // document.addEventListener('DOMContentLoaded', loadbar, false);
-// }());
