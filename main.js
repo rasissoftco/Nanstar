@@ -28,19 +28,11 @@ function GetGeneralFood() {
             SetVahedPool(res.VahedPool);
 
             // Empty Element
-            $('#giphys').empty();
             $('#RstrntImgSlider').empty();
             $('#BannerImgSlider').empty();
             $('#Menu').empty();
             $('#LatestTCDY').empty();
             $('#BestSellTCDY').empty();
-
-            // for(key in res) {
-            // if(res.hasOwnProperty(key)) {
-            // var value = res[key];
-            // //do something with value;
-            // console.log('key: ' + key +' ,value: ' + value);
-            // }}
 
             var rstrntImg = res.RstrntImgs;
             var rstImgData = '';
@@ -73,54 +65,7 @@ function GetGeneralFood() {
                     '</div></a>'
             }
             $('#Menu').prepend(menuData);
-
-            var latestTCDY = res.LatestTCDies;
-            var latestTcdyData = '';
-            for (var latest in latestTCDY) {
-                latestTcdyData += '<div class="inner-scroll">' +
-                    '<img src="https://nan.ep724.ir/Files/' + latestTCDY[latest].Pic + '" style="width:100%;height:120px" />' +
-                    '<p style="overflow:hidden">' + latestTCDY[latest].Cne + '</p>' +
-                    '<p style="overflow:hidden">' + numberWithCommas(latestTCDY[latest].Cfe) + res.VahedPool + '</p>';
-                if (latestTCDY[latest].CExst == true) {
-                  if (IsInCart(latestTCDY[latest].TCDYID) == false){
-                    latestTcdyData += '<button onclick="AddToCart(' + latestTCDY[latest].TCDYID +',\'' + latestTCDY[latest].Cne + '\', this)"  class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
-                  }
-                  else {
-                    latestTcdyData += '<button onclick="RemoveFromCart(' + latestTCDY[latest].TCDYID +',\'' + latestTCDY[latest].Cne + '\', this)"  class="btn btn-success btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i>حذف از سبد خرید</button>';
-                  }
-                }
-                else if (latestTCDY[latest].CExst == false) {
-                    latestTcdyData += '<button class="btn btn-warning btn-flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
-                }
-                latestTcdyData += '</div>';
-            }
-            $('#LatestTCDY').prepend(latestTcdyData);
-
-            var bestSellTCDY = res.BestSellTCDies;
-            var bestSellTcdyData = '';
-            for (var best in bestSellTCDY) {
-                bestSellTcdyData += '<div class="inner-scroll">' +
-                    '<img src="https://nan.ep724.ir/Files/' + bestSellTCDY[best].Pic + '" style="width:100%;height:120px" />' +
-                    '<p style="overflow:hidden">' + bestSellTCDY[best].Cne + '</p>' +
-                    '<p style="overflow:hidden">' + numberWithCommas(bestSellTCDY[best].Cfe) + res.VahedPool + '</p>';
-                if (bestSellTCDY[best].CExst == true) {
-                  if (IsInCart(bestSellTCDY[best].TCDYID) == false){
-                    bestSellTcdyData += '<button onclick="AddToCart(' + bestSellTCDY[best].TCDYID +',\'' + bestSellTCDY[best].Cne + '\',this)" class="btn btn-warning btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
-                  }
-                  else {
-                    {
-                      bestSellTcdyData += '<button onclick="RemoveFromCart(' + bestSellTCDY[best].TCDYID +',\'' + bestSellTCDY[best].Cne + '\',this)" class="btn btn-success btn-flat btn-block" style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i>حذف از سبد خرید</button>';
-                    }
-                  }
-                }
-                else if (bestSellTCDY[best].CExst == false) {
-                    bestSellTcdyData += '<button class="btn btn-warning btn-flat btn-block" disabled style="color:#000;font-size:10px;border-radius:0px;"><i class="fa fa-shopping-cart" ></i> افزودن به سبد خرید</button>';
-                }
-                bestSellTcdyData += '</div>';
-            }
-            $('#BestSellTCDY').prepend(bestSellTcdyData);
-
-            UpdateShoppingCartIcon();
+        
             HideOverlay();
         })
 
