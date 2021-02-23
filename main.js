@@ -25,8 +25,8 @@ function GetGeneralFood() {
         // Success
         .done(function (res) {
 
-            SetVahedPool(res.VahedPool);
-
+        alert(res);
+        
             // Empty Element
             $('#RstrntImgSlider').empty();
             $('#BannerImgSlider').empty();
