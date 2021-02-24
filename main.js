@@ -12,6 +12,8 @@ const isIos = () => {
 }
 const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
 
+alert("isIos " + isIos() );
+alert("!isInStandaloneMode " + !isInStandaloneMode());
 if (isIos() && !isInStandaloneMode()) {
   this.setState({ showInstallMessage: true });
 }
