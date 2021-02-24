@@ -7,6 +7,7 @@ if (navigator.serviceWorker) {
 // add to homescreen alert for ios
 const isIos = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
+  alert(userAgent);
   return /iphone|ipad|ipod/.test( userAgent );
 }
 const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
