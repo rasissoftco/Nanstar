@@ -3,6 +3,18 @@ if (navigator.serviceWorker) {
     //register sw
     navigator.serviceWorker.register('sw.js').catch(console.error)
 }
+
+// add to homescreen alert for ios
+const isIos = () => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test( userAgent );
+}
+const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+if (isIos() && !isInStandaloneMode()) {
+  this.setState({ showInstallMessage: true });
+}
+
 var static_data = {
     //base_url: 'http://localhost:50930/api',
     base_url: 'https://nan.ep724.ir/api',
