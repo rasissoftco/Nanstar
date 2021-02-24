@@ -8,7 +8,7 @@ if (navigator.serviceWorker) {
 const isIos = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
   alert(userAgent);
-  return /iphone|ipad|ipod/.test( userAgent );
+  return /iphone|ipad|ipod|Mac/.test( userAgent );
 }
 const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
 
